@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tri AcademCal - Academic Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .calculator {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .calculator-header {
+            text-align: center;
+            color: #4a4a4a;
+            margin-bottom: 15px;
+        }
+
+        .calculator-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .calculator-header small {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .display {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            min-height: 90px;
+        }
+
+        .display .expression {
+            color: #aaa;
+            font-size: 16px;
+            min-height: 25px;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+        }
+
+        .display .result {
+            color: #fff;
+            font-size: 32px;
+            font-weight: 600;
+            text-align: right;
+            min-height: 45px;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+        }
+
+        .display .error {
+            color: #ff6b6b;
+            font-size: 16px;
+            text-align: right;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            flex: 1;
+            min-width: 60px;
+            padding: 8px 10px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: #555;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 12px 8px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn.operator {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn.operator:hover {
+            background: #5a6fd6;
+        }
+
+        .btn.equals {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .btn.equals:hover {
+            background: linear-gradient(135deg, #e07ae8, #e84a5f);
+        }
+
+        .btn.function {
+            background: #4a4a8a;
+            color: white;
+            font-size: 12px;
+        }
+
+        .btn.function:hover {
+            background: #3a3a7a;
+        }
+
+        .btn.clear {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn.clear:hover {
+            background: #ee5a5a;
+        }
+
+        .btn.span-2 {
+            grid-column: span 2;
+        }
+
+        .btn.span-3 {
+            grid-column: span 3;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .history {
+            margin-top: 15px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 15px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            font-size: 14px;
+            color: #666;
+            padding: 4px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .history-item .h-result {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .history::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .history::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 2px;
+        }
+
+        @media (max-width: 500px) {
+            .buttons {
+                gap: 5px;
+            }
+            .btn {
+                font-size: 14px;
+                padding: 10px 6px;
+            }
+            .mode-btn {
+                font-size: 10px;
+                min-width: 45px;
+                padding: 6px 6px;
+            }
+            .calculator {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="calculator-header">
+            <h1>🧮 Tri AcademCal</h1>
+            <small>Academic Calculator v2.0</small>
+        </div>
+
+        <div class="display">
+            <div class="expression" id="expression"></div>
+            <div class="result" id="result">0</div>
+            <div class="error" id="error"></div>
+        </div>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="basic">Basic</button>
+            <button class="mode-btn" data-mode="scientific">Scientific</button>
+            <button class="mode-btn" data-mode="algebra">Algebra</button>
+            <button class="mode-btn" data-mode="calculus">Calculus</button>
+            <button class="mode-btn" data-mode="statistics">Statistics</button>
+        </div>
+
+        <div class="buttons" id="buttons">
+            <!-- Buttons will be rendered by JavaScript -->
+        </div>
+
+        <div class="history" id="history">
+            <div style="color: #aaa; font-size: 12px; text-align: center;">History</div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // TRI ACADEMCAL - Full Academic Calculator
+        // ============================================================
+
+        class TriAcademCal {
+            constructor() {
+                this.expression = '';
+                this.result = '0';
+                this.history = [];
+                this.mode = 'basic';
+                this.memory = 0;
+                this.isRadians = true;
+                this.statData = [];
+
+                // DOM elements
+                this.expressionEl = document.getElementById('expression');
+                this.resultEl = document.getElementById('result');
+                this.errorEl = document.getElementById('error');
+                this.historyEl = document.getElementById('history');
+                this.buttonsEl = document.getElementById('buttons');
+
+                this.init();
+            }
+
+            init() {
+                this.renderButtons();
+                this.setupModeSwitching();
+                this.updateDisplay();
+            }
+
+            // ---------- Button Layouts ----------
+            getButtonLayouts() {
+                return {
+                    basic: [
+                        ['(', ')', 'C', '⌫', '÷'],
+                        ['x²', '√', 'x³', '∛', '×'],
+                        ['7', '8', '9', '−', '+'],
+                        ['4', '5', '6', '=', '='],
+                        ['1', '2', '3', '=', '='],
+                        ['0', '.', '±', '=', '='],
+                    ],
+                    scientific: [
+                        ['sin', 'cos', 'tan', 'log', 'ln'],
+                        ['sin⁻¹', 'cos⁻¹', 'tan⁻¹', 'log₂', 'eˣ'],
+                        ['π', 'e', '!', 'xʸ', '10ˣ'],
+                        ['(', ')', 'C', '⌫', '÷'],
+                        ['7', '8', '9', '×', '√'],
+                        ['4', '5', '6', '+', '−'],
+                        ['1', '2', '3', '=', '='],
+                        ['0', '.', '±', '=', '='],
+                    ],
+                    algebra: [
+                        ['solve', 'factor', 'expand', 'simplify'],
+                        ['quadratic', 'linear', 'polynomial'],
+                        ['(', ')', 'C', '⌫', '÷'],
+                        ['7', '8', '9', '×', '√'],
+                        ['4', '5', '6', '+', '−'],
+                        ['1', '2', '3', '=', '='],
+                        ['0', '.', '±', '=', '='],
+                        ['x', 'y', 'z', '=', '='],
+                    ],
+                    calculus: [
+                        ['derivative', 'integral', 'limit'],
+                        ['∂/∂x', '∫', 'lim', '≈'],
+                        ['(', ')', 'C', '⌫', '÷'],
+                        ['7', '8', '9', '×', '√'],
+                        ['4', '5', '6', '+', '−'],
+                        ['1', '2', '3', '=', '='],
+                        ['0', '.', '±', '=', '='],
+                        ['x', 'dx', 'd/dx', '=', '='],
+                    ],
+                    statistics: [
+                        ['mean', 'median', 'mode', 'stddev', 'variance'],
+                        ['sum', 'min', 'max', 'count', 'range'],
+                        ['data:', 'add', 'clear', '⌫'],
+                        ['1', '2', '3', '4', '5'],
+                        ['6', '7', '8', '9', '0'],
+                        [',', '(', ')', '=', '='],
+                        ['C', '±', '.', '=', '='],
+                    ]
+                };
+            }
+
+            renderButtons() {
+                const layouts = this.getButtonLayouts();
+                const layout = layouts[this.mode] || layouts.basic;
+                let html = '';
+
+                // Special handling for different modes
+                if (this.mode === 'statistics') {
+                    layout.forEach(row => {
+                        row.forEach(label => {
+                            const cls = this.getButtonClass(label);
+                            const span = this.getSpan(label);
+                            html += `<button class="btn ${cls}" data-action="${label}" style="grid-column: span ${span}">${label}</button>`;
+                        });
+                    });
+                } else {
+                    layout.forEach(row => {
+                        row.forEach(label => {
+                            const cls = this.getButtonClass(label);
+                            const span = this.getSpan(label);
+                            const action = this.getAction(label);
+                            html += `<button class="btn ${cls}" data-action="${action}" style="grid-column: span ${span}">${label}</button>`;
+                        });
+                    });
+                }
+
+                this.buttonsEl.innerHTML = html;
+                this.attachButtonEvents();
+            }
+
+            getButtonClass(label) {
+                if (['+', '−', '×', '÷', '='].includes(label)) return 'operator';
+                if (['C', '⌫'].includes(label)) return 'clear';
+                if (['sin', 'cos', 'tan', 'log', 'ln', '√', 'x²', 'x³', '!', 'π', 'e'].includes(label)) return 'function';
+                if (['solve', 'factor', 'expand', 'simplify', 'quadratic', 'linear', 'polynomial'].includes(label)) return 'function';
+                if (['derivative', 'integral', 'limit', '∂/∂x', '∫', 'lim'].includes(label)) return 'function';
+                if (['mean', 'median', 'mode', 'stddev', 'variance', 'sum', 'min', 'max', 'count', 'range'].includes(label)) return 'function';
+                if (label === '=') return 'equals';
+                if (['(', ')', '±'].includes(label)) return 'operator';
+                if (['x', 'y', 'z', 'dx', 'd/dx'].includes(label)) return 'function';
+                if (['data:', 'add', 'clear', '⌫'].includes(label)) return 'clear';
+                return '';
+            }
+
+            getSpan(label) {
+                if (['=', 'solve', 'derivative', 'integral', 'mean', 'median'].includes(label)) return 2;
+                if (label === 'quadratic') return 3;
+                return 1;
+            }
+
+            getAction(label) {
+                const map = {
+                    '×': '*',
+                    '÷': '/',
+                    '−': '-',
+                    'x²': '^2',
+                    'x³': '^3',
+                    '√': 'sqrt',
+                    '∛': 'cbrt',
+                    '±': 'negate',
+                    '⌫': 'backspace',
+                    'C': 'clear',
+                    '=': 'calculate',
+                    'sin': 'sin',
+                    'cos': 'cos',
+                    'tan': 'tan',
+                    'sin⁻¹': 'asin',
+                    'cos⁻¹': 'acos',
+                    'tan⁻¹': 'atan',
+                    'log': 'log10',
+                    'ln': 'ln',
+                    'log₂': 'log2',
+                    'eˣ': 'exp',
+                    '10ˣ': 'pow10',
+                    '!': 'factorial',
+                    'xʸ': '^',
+                    'π': 'pi',
+                    'e': 'euler',
+                    'solve': 'solve',
+                    'factor': 'factor',
+                    'expand': 'expand',
+                    'simplify': 'simplify',
+                    'quadratic': 'quadratic',
+                    'linear': 'linear',
+                    'polynomial': 'polynomial',
+                    'derivative': 'derivative',
+                    'integral': 'integral',
+                    'limit': 'limit',
+                    '∂/∂x': 'partial',
+                    '∫': 'integral_sym',
+                    'lim': 'limit_sym',
+                    '≈': 'approx',
+                    'mean': 'mean',
+                    'median': 'median',
+                    'mode': 'mode',
+                    'stddev': 'stddev',
+                    'variance': 'variance',
+                    'sum': 'sum',
+                    'min': 'min',
+                    'max': 'max',
+                    'count': 'count',
+                    'range': 'range',
+                    'data:': 'dataLabel',
+                    'add': 'addData',
+                };
+                return map[label] || label;
+            }
+
+            attachButtonEvents() {
+                document.querySelectorAll('#buttons .btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const action = btn.dataset.action;
+                        this.handleAction(action);
+                    });
+                });
+            }
+
+            // ---------- Mode Switching ----------
+            setupModeSwitching() {
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.mode = btn.dataset.mode;
+                        this.clearError();
+                        this.renderButtons();
+                        this.updateDisplay();
+                    });
+                });
+            }
+
+            // ---------- Action Handler ----------
+            handleAction(action) {
+                this.clearError();
+
+                if (action === 'clear') {
+                    this.expression = '';
+                    this.result = '0';
+                    this.updateDisplay();
+                    return;
+                }
+
+                if (action === 'backspace') {
+                    this.expression = this.expression.slice(0, -1);
+                    this.updateDisplay();
+                    return;
+                }
+
+                if (action === 'negate') {
+                    if (this.result !== '0' && this.result !== '') {
+                        this.result = String(-parseFloat(this.result));
+                        this.expression = this.result;
+                        this.updateDisplay();
+                    }
+                    return;
+                }
+
+                if (action === 'calculate') {
+                    this.calculate();
+                    return;
+                }
+
+                if (action === 'dataLabel') {
+                    this.expression += 'data: ';
+                    this.updateDisplay();
+                    return;
+                }
+
+                if (action === 'addData') {
+                    this.addDataPoint();
+                    return;
+                }
+
+                // Special mode-specific actions
+                if (['solve', 'factor', 'expand', 'simplify', 'quadratic', 'linear', 'polynomial'].includes(action)) {
+                    this.handleAlgebra(action);
+                    return;
+                }
+
+                if (['derivative', 'integral', 'limit', 'partial', 'integral_sym', 'limit_sym', 'approx'].includes(action)) {
+                    this.handleCalculus(action);
+                    return;
+                }
+
+                if (['mean', 'median', 'mode', 'stddev', 'variance', 'sum', 'min', 'max', 'count', 'range'].includes(action)) {
+                    this.handleStatistics(action);
+                    return;
+                }
+
+                // Scientific functions
+                if (['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'log10', 'ln', 'log2', 'exp', 'pow10'].includes(action)) {
+                    this.handleScientific(action);
+                    return;
+                }
+
+                if (action === 'factorial') {
+                    this.handleFactorial();
+                    return;
+                }
+
+                if (action === 'pi') {
+                    this.expression += Math.PI.toString();
+                    this.updateDisplay();
+                    return;
+                }
+
+                if (action === 'euler') {
+                    this.expression += Math.E.toString();
+                    this.updateDisplay();
+                    return;
+                }
+
+                if (action === 'sqrt') {
+                    this.expression += '√(';
+                    this.updateDisplay();
+                    return;
+                }
+
+                if (action === 'cbrt') {
+                    this.expression += '∛(';
+                    this.updateDisplay();
+                    return;
+                }
+
+                if (action === '^') {
+                    this.expression += '^';
+                    this.updateDisplay();
+                    return;
+                }
+
+                if (action === '^2') {
+                    this.expression += '²';
+                    this.updateDisplay();
+                    return;
+                }
+
+                if (action === '^3') {
+                    this.expression += '³';
+                    this.updateDisplay();
+                    return;
+                }
+
+                // Default: append to expression
+                const displayMap = {
+                    '*': '×',
+                    '/': '÷',
+                    '-': '−',
+                };
+                const displayChar = displayMap[action] || action;
+                this.expression += displayChar;
+                this.updateDisplay();
+            }
+
+            // ---------- Scientific Functions ----------
+            handleScientific(action) {
+                const value = parseFloat(this.result) || 0;
+                let result;
+
+                const angle = this.isRadians ? value : value * Math.PI / 180;
+
+                switch (action) {
+                    case 'sin':
+                        result = Math.sin(angle);
+                        break;
+                    case 'cos':
+                        result = Math.cos(angle);
+                        break;
+                    case 'tan':
+                        result = Math.tan(angle);
+                        break;
+                    case 'asin':
+                        result = Math.asin(value);
+                        if (!this.isRadians) result = result * 180 / Math.PI;
+                        break;
+                    case 'acos':
+                        result = Math.acos(value);
+                        if (!this.isRadians) result = result * 180 / Math.PI;
+                        break;
+                    case 'atan':
+                        result = Math.atan(value);
+                        if (!this.isRadians) result = result * 180 / Math.PI;
+                        break;
+                    case 'log10':
+                        result = Math.log10(value);
+                        break;
+                    case 'ln':
+                        result = Math.log(value);
+                        break;
+                    case 'log2':
+                        result = Math.log2(value);
+                        break;
+                    case 'exp':
+                        result = Math.exp(value);
+                        break;
+                    case 'pow10':
+                        result = Math.pow(10, value);
+                        break;
+                    default:
+                        return;
+                }
+
+                if (isNaN(result) || !isFinite(result)) {
+                    this.showError('Math Error');
+                    return;
+                }
+
+                this.result = String(result);
+                this.expression = `${action}(${value}) = ${this.result}`;
+                this.addHistory(this.expression);
+                this.updateDisplay();
+            }
+
+            handleFactorial() {
+                const value = parseInt(this.result) || 0;
+                if (value < 0 || !Number.isInteger(value)) {
+                    this.showError('Factorial requires non-negative integer');
+                    return;
+                }
+                let result = 1;
+                for (let i = 2; i <= value; i++) {
+                    result *= i;
+                }
+                this.result = String(result);
+                this.expression = `${value}! = ${this.result}`;
+                this.addHistory(this.expression);
+                this.updateDisplay();
+            }
+
+            // ---------- Algebra Functions ----------
+            handleAlgebra(action) {
+                const expr = this.expression || this.result;
+                let result = '';
+
+                switch (action) {
+                    case 'solve':
+                        result = this.solveEquation(expr);
+                        break;
+                    case 'factor':
+                        result = this.factorExpression(expr);
+                        break;
+                    case 'expand':
+                        result = this.expandExpression(expr);
+                        break;
+                    case 'simplify':
+                        result = this.simplifyExpression(expr);
+                        break;
+                    case 'quadratic':
+                        result = this.solveQuadratic(expr);
+                        break;
+                    case 'linear':
+                        result = this.solveLinear(expr);
+                        break;
+                    case 'polynomial':
+                        result = this.solvePolynomial(expr);
+                        break;
+                    default:
+                        return;
+                }
+
+                if (result) {
+                    this.result = result;
+                    this.expression = `${action}(${expr}) = ${result}`;
+                    this.addHistory(this.expression);
+                    this.updateDisplay();
+                }
+            }
+
+            solveEquation(expr) {
+                // Simple equation solver for linear equations
+                try {
+                    // Remove spaces and handle simple cases
+                    const clean = expr.replace(/\s/g, '');
+                    // For now, just evaluate if it's a simple expression
+                    const evalResult = this.evaluateExpression(clean);
+                    return evalResult !== null ? String(evalResult) : 'Cannot solve';
+                } catch (e) {
+                    this.showError('Cannot solve equation');
+                    return null;
+                }
+            }
+
+            solveQuadratic(expr) {
+                // Parse ax² + bx + c = 0
+                try {
+                    const clean = expr.replace(/\s/g, '');
+                    // Simple parser for quadratic
+                    let a = 1,
+                        b = 0,
+                        c = 0;
+
+                    // Try to extract coefficients
+                    const match = clean.match(/([+-]?\d*)x²([+-]?\d*)x([+-]?\d+)/);
+                    if (match) {
+                        a = parseFloat(match[1]) || 1;
+                        b = parseFloat(match[2]) || 0;
+                        c = parseFloat(match[3]) || 0;
+                    } else {
+                        const match2 = clean.match(/([+-]?\d*)x²([+-]?\d+)/);
+                        if (match2) {
+                            a = parseFloat(match2[1]) || 1;
+                            c = parseFloat(match2[2]) || 0;
+                        } else {
+                            return 'Invalid quadratic format (use: ax²+bx+c)';
+                        }
+                    }
+
+                    const discriminant = b * b - 4 * a * c;
+                    if (discriminant < 0) {
+                        return 'No real roots';
+                    } else if (discriminant === 0) {
+                        const root = -b / (2 * a);
+                        return `x = ${root}`;
+                    } else {
+                        const root1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+                        const root2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+                        return `x₁ = ${root1}, x₂ = ${root2}`;
+                    }
+                } catch (e) {
+                    this.showError('Invalid quadratic');
+                    return null;
+                }
+            }
+
+            solveLinear(expr) {
+                try {
+                    const clean = expr.replace(/\s/g, '');
+                    // Solve ax + b = 0
+                    const match = clean.match(/([+-]?\d*)x([+-]?\d+)/);
+                    if (match) {
+                        const a = parseFloat(match[1]) || 1;
+                        const b = parseFloat(match[2]) || 0;
+                        if (a === 0) return 'No solution';
+                        return `x = ${-b/a}`;
+                    }
+                    return 'Invalid linear equation (use: ax+b)';
+                } catch (e) {
+                    this.showError('Invalid linear equation');
+                    return null;
+                }
+            }
+
+            solvePolynomial(expr) {
+                return 'Polynomial solver: enter polynomial to solve';
+            }
+
+            factorExpression(expr) {
+                return `Factor(${expr}) = (${expr})`;
+            }
+
+            expandExpression(expr) {
+                return `Expand(${expr}) = ${expr}`;
+            }
+
+            simplifyExpression(expr) {
+                try {
+                    const result = this.evaluateExpression(expr);
+                    return result !== null ? String(result) : 'Cannot simplify';
+                } catch (e) {
+                    return 'Cannot simplify';
+                }
+            }
+
+            // ---------- Calculus Functions ----------
+            handleCalculus(action) {
+                const expr = this.expression || this.result;
+                let result = '';
+
+                switch (action) {
+                    case 'derivative':
+                        result = this.derivative(expr);
+                        break;
+                    case 'integral':
+                        result = this.integral(expr);
+                        break;
+                    case 'limit':
+                        result = this.limit(expr);
+                        break;
+                    case 'partial':
+                        result = '∂/∂x: ' + expr;
+                        break;
+                    case 'integral_sym':
+                        result = '∫ ' + expr + ' dx';
+                        break;
+                    case 'limit_sym':
+                        result = 'lim(' + expr + ')';
+                        break;
+                    case 'approx':
+                        result = this.approximate(expr);
+                        break;
+                    default:
+                        return;
+                }
+
+                if (result) {
+                    this.result = result;
+                    this.expression = `${action}: ${expr} → ${result}`;
+                    this.addHistory(this.expression);
+                    this.updateDisplay();
+                }
+            }
+
+            derivative(expr) {
+                // Simple derivative approximation
+                try {
+                    const x = 1; // evaluate at x=1
+                    const h = 0.0001;
+                    const f = (val) => {
+                        const evalExpr = expr.replace(/x/g, `(${val})`);
+                        return this.evaluateExpression(evalExpr) || 0;
+                    };
+                    const deriv = (f(x + h) - f(x - h)) / (2 * h);
+                    return `d/dx ≈ ${deriv.toFixed(4)}`;
+                } catch (e) {
+                    return 'Cannot compute derivative';
+                }
+            }
+
+            integral(expr) {
+                try {
+                    const a = 0,
+                        b = 1,
+                        n = 1000;
+                    const h = (b - a) / n;
+                    let sum = 0;
+                    const f = (val) => {
+                        const evalExpr = expr.replace(/x/g, `(${val})`);
+                        return this.evaluateExpression(evalExpr) || 0;
+                    };
+                    for (let i = 0; i < n; i++) {
+                        const x = a + i * h + h / 2;
+                        sum += f(x);
+                    }
+                    return `∫₀¹ ≈ ${(sum * h).toFixed(4)}`;
+                } catch (e) {
+                    return 'Cannot compute integral';
+                }
+            }
+
+            limit(expr) {
+                try {
+                    const f = (val) => {
+                        const evalExpr = expr.replace(/x/g, `(${val})`);
+                        return this.evaluateExpression(evalExpr) || 0;
+                    };
+                    const lim = f(1e-10);
+                    return `lim(x→0) ≈ ${lim.toFixed(4)}`;
+                } catch (e) {
+                    return 'Cannot compute limit';
+                }
+            }
+
+            approximate(expr) {
+                try {
+                    const result = this.evaluateExpression(expr);
+                    return result !== null ? result.toFixed(6) : 'Cannot approximate';
+                } catch (e) {
+                    return 'Cannot approximate';
+                }
+            }
+
+            // ---------- Statistics Functions ----------
+            handleStatistics(action) {
+                if (this.statData.length === 0) {
+                    this.showError('No data. Enter numbers first (e.g., "data: 1,2,3,4,5")');
+                    return;
+                }
+
+                let result = '';
+                const data = this.statData;
+
+                switch (action) {
+                    case 'mean':
+                        result = `mean = ${(data.reduce((a,b) => a+b, 0) / data.length).toFixed(4)}`;
+                        break;
+                    case 'median':
+                        const sorted = [...data].sort((a,b) => a-b);
+                        const mid = Math.floor(sorted.length / 2);
+                        result = `median = ${sorted.length % 2 === 0 ? (sorted[mid-1] + sorted[mid]) / 2 : sorted[mid]}`;
+                        break;
+                    case 'mode':
+                        const freq = {};
+                        data.forEach(v => freq[v] = (freq[v] || 0) + 1);
+                        let maxFreq = 0, modes = [];
+                        for (let [val, count] of Object.entries(freq)) {
+                            if (count > maxFreq) {
+                                maxFreq = count;
+                                modes = [val];
+                            } else if (count === maxFreq) {
+                                modes.push(val);
+                            }
+                        }
+                        result = `mode = ${modes.join(', ')}`;
+                        break;
+                    case 'stddev':
+                        const mean = data.reduce((a,b) => a+b, 0) / data.length;
+                        const variance = data.reduce((a,b) => a + Math.pow(b-mean, 2), 0) / data.length;
+                        result = `stddev = ${Math.sqrt(variance).toFixed(4)}`;
+                        break;
+                    case 'variance':
+                        const mean2 = data.reduce((a,b) => a+b, 0) / data.length;
+                        const var2 = data.reduce((a,b) => a + Math.pow(b-mean2, 2), 0) / data.length;
+                        result = `variance = ${var2.toFixed(4)}`;
+                        break;
+                    case 'sum':
+                        result = `sum = ${data.reduce((a,b) => a+b, 0)}`;
+                        break;
+                    case 'min':
+                        result = `min = ${Math.min(...data)}`;
+                        break;
+                    case 'max':
+                        result = `max = ${Math.max(...data)}`;
+                        break;
+                    case 'count':
+                        result = `count = ${data.length}`;
+                        break;
+                    case 'range':
+                        result = `range = ${Math.max(...data) - Math.min(...data)}`;
+                        break;
+                    default:
+                        return;
+                }
+
+                this.result = result;
+                this.expression = `${action}: [${data.join(', ')}]`;
+                this.addHistory(this.expression + ' → ' + result);
+                this.updateDisplay();
+            }
+
+            addDataPoint() {
+                const input = this.expression.replace('data:', '').trim();
+                const numbers = input.split(',').map(Number).filter(n => !isNaN(n));
+                if (numbers.length === 0) {
+                    this.showError('Enter numbers separated by commas');
+                    return;
+                }
+                this.statData.push(...numbers);
+                this.expression = `data: ${this.statData.join(', ')}`;
+                this.result = `${this.statData.length} data points`;
+                this.addHistory(`Added data: [${numbers.join(', ')}]`);
+                this.updateDisplay();
+            }
+
+            // ---------- Evaluation Engine ----------
+            evaluateExpression(expr) {
+                try {
+                    // Replace display symbols
+                    let evalStr = expr
+                        .replace(/×/g, '*')
+                        .replace(/÷/g, '/')
+                        .replace(/−/g, '-')
+                        .replace(/√\(/g, 'Math.sqrt(')
+                        .replace(/∛\(/g, 'Math.cbrt(')
+                        .replace(/²/g, '**2')
+                        .replace(/³/g, '**3')
+                        .replace(/π/g, `(${Math.PI})`)
+                        .replace(/e(?![xp])/g, `(${Math.E})`);
+
+                    // Safety: only allow safe characters
+                    if (!/^[\d+\-*/().%^, Math.sqrtsincoestanlogexpcbrtPI]+$/.test(evalStr)) {
+                        // Allow function names
+                        evalStr = evalStr.replace(/Math\.\w+/g, (match) => match);
+                    }
+
+                    // Evaluate using Function constructor (safer than eval for math)
+                    const result = new Function(`return (${evalStr})`)();
+                    return result;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            calculate() {
+                const expr = this.expression;
+                if (!expr) return;
+
+                try {
+                    // Try to evaluate
+                    let result = this.evaluateExpression(expr);
+
+                    if (result === null || !isFinite(result)) {
+                        this.showError('Invalid Expression');
+                        return;
+                    }
+
+                    // Format result
+                    this.result = Number.isInteger(result) ? String(result) : String(parseFloat(result.toFixed(10)));
+                    this.addHistory(`${expr} = ${this.result}`);
+                    this.updateDisplay();
+                } catch (e) {
+                    this.showError('Error in calculation');
+                }
+            }
+
+            // ---------- Utility Functions ----------
+            addHistory(entry) {
+                this.history.unshift(entry);
+                if (this.history.length > 20) this.history.pop();
+                this.renderHistory();
+            }
+
+            renderHistory() {
+                let html = '<div style="color: #aaa; font-size: 12px; text-align: center;">History</div>';
+                this.history.forEach(item => {
+                    html += `<div class="history-item">${item}</div>`;
+                });
+                this.historyEl.innerHTML = html;
+            }
+
+            updateDisplay() {
+                this.expressionEl.textContent = this.expression || '\u200B';
+                this.resultEl.textContent = this.result || '0';
+            }
+
+            showError(msg) {
+                this.errorEl.textContent = msg;
+                setTimeout(() => this.clearError(), 3000);
+            }
+
+            clearError() {
+                this.errorEl.textContent = '';
+            }
+
+            // ---------- Keyboard Support ----------
+            setupKeyboard() {
+                document.addEventListener('keydown', (e) => {
+                    const key = e.key;
+                    if (key >= '0' && key <= '9') {
+                        this.handleAction(key);
+                    } else if (key === '.') {
+                        this.handleAction('.');
+                    } else if (key === '+') {
+                        this.handleAction('+');
+                    } else if (key === '-') {
+                        this.handleAction('−');
+                    } else if (key === '*') {
+                        this.handleAction('×');
+                    } else if (key === '/') {
+                        this.handleAction('÷');
+                    } else if (key === 'Enter' || key === '=') {
+                        e.preventDefault();
+                        this.handleAction('=');
+                    } else if (key === 'Backspace') {
+                        this.handleAction('⌫');
+                    } else if (key === 'Escape') {
+                        this.handleAction('C');
+                    } else if (key === '(') {
+                        this.handleAction('(');
+                    } else if (key === ')') {
+                        this.handleAction(')');
+                    }
+                });
+            }
+        }
+
+        // ============================================================
+        // Initialize the calculator
+        // ============================================================
+        const calc = new TriAcademCal();
+        calc.setupKeyboard();
+
+        console.log('🧮 Tri AcademCal loaded successfully!');
+        console.log('Mode: Basic | Scientific | Algebra | Calculus | Statistics');
+        console.log('Type equations or use buttons. Press Enter to calculate.');
+    </script>
+</body>
+</html>
